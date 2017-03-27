@@ -1,6 +1,5 @@
 package rest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import datasource.InventoryProvider;
+import exception.TransactionException;
+import inventory.InventoryProvider;
 import models.BuyResponse;
 import models.Item;
 
@@ -21,16 +21,17 @@ public class Endpoints {
 	
     @RequestMapping(value="/items", method=RequestMethod.GET)
     public List<Item> items(){
-    	List<Item> items = new ArrayList<Item>();
-    	Item item = new Item("FirstItem", "The description of my first item", 120);
-    	items.add(item);
-    	
-    	return items;
+    	return inventoryProvider.getItems();
     }
     
     @RequestMapping(value="/items/{itemName}", method=RequestMethod.POST)
-    public BuyResponse buy(@PathVariable String itemName){
-    	return inventoryProvider.buy(itemName);
-    }    
+    public BuyResponse buy(@PathVariable String itemName) throws TransactionException{
+    	BuyResponse response = inventoryProvider.buy(itemName);
+    	if(response != null){
+    		return response;
+    	}else{
+    		throw new TransactionException("Failed to make purchase");
+    	}
+    }
 	
 }

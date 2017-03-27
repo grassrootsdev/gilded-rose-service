@@ -1,6 +1,7 @@
 package init;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 
 @Configuration
 @EnableWebSecurity
+@ComponentScan(basePackages={"rest"})
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	private static final int SECONDS_IN_HOUR = 60*60;
@@ -22,21 +24,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/items").hasRole("USER")
                 .anyRequest().authenticated()
                 .and()
-//            .formLogin()
-//                .loginPage("/login")
-//                .permitAll()
-//                .and()
-            .httpBasic()
+            .httpBasic() //allows for programatic login
             	.and()
             .rememberMe()
             	.tokenValiditySeconds(SECONDS_IN_HOUR)
             	.and()
-            .csrf()
+            .csrf()      //i'd want to talk with security person at work before using this option in prod
             	.disable()
             .logout()
                 .permitAll();
     }
 
+    /**
+     * This store would reach out to db or other secure store in prod environment
+     * @param auth
+     * @throws Exception
+     */
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth
