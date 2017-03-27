@@ -5,6 +5,7 @@ public class Item {
 	public String name;
 	public String description;
 	public int price;
+	public String purchaseLink;
 	
 	public Item(String name, String description, int price){
 		this.name = name;

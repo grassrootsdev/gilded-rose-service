@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import datasource.InventoryDbConnector;
 import datasource.InventoryDbConnectorMock.DbResponse;
+import exception.TransactionException;
 import models.BuyResponse;
 import models.Item;
 
@@ -21,9 +22,16 @@ public class InventoryProvider {
 		this.dbConnector = dbConnector;
 	}
 
-	public BuyResponse buy(String itemName) {
+	public BuyResponse buy(String itemName) throws TransactionException {
+		
+		DbResponse dbResponse = dbConnector.buyItem(itemName);		
+		BuyResponse buyResponse = prepareResponse(itemName, dbResponse);
+		
+		return buyResponse;
+	}
+
+	private BuyResponse prepareResponse(String itemName, DbResponse dbResponse) {
 		BuyResponse buyResponse = new BuyResponse();
-		DbResponse dbResponse = dbConnector.buyItem(itemName);
 		buyResponse.txnId = dbResponse.txnId;
 		
 		if (dbResponse.success) {
@@ -33,7 +41,6 @@ public class InventoryProvider {
 			buyResponse.success = false;
 			buyResponse.message = String.format(FAIL_RESPONSE_TEMPLATE, itemName, dbResponse.message);
 		}
-		
 		return buyResponse;
 	}
 	
@@ -41,8 +48,9 @@ public class InventoryProvider {
 	 * Return List<Item> from downstream source.
 	 * NOTE - Depending on biz requirements, could do filtering/manipulation here
 	 * @return
+	 * @throws TransactionException 
 	 */
-	public List<Item> getItems(){
+	public List<Item> getItems() throws TransactionException{
 		return dbConnector.getItems();
 	}
 }

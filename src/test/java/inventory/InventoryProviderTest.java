@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import datasource.InventoryDbConnector;
 import datasource.InventoryDbConnectorMock.DbResponse;
+import exception.TransactionException;
 import models.BuyResponse;
 
 public class InventoryProviderTest {
@@ -29,7 +30,7 @@ public class InventoryProviderTest {
 	}
 
 	@Test
-	public void testSuccessBuy() {
+	public void testSuccessBuy() throws TransactionException {
 		UUID txnId = UUID.randomUUID();
 		DbResponse response = EasyMock.createMock(DbResponse.class);
 		response.success = true;
@@ -43,7 +44,7 @@ public class InventoryProviderTest {
 	}
 	
 	@Test
-	public void testFailBuy() {
+	public void testFailBuy() throws TransactionException {
 		UUID txnId = UUID.randomUUID();
 		DbResponse response = EasyMock.createMock(DbResponse.class);
 		response.success = false;
@@ -58,7 +59,18 @@ public class InventoryProviderTest {
 	
 	@Ignore
 	@Test
+	/*
+	 * 	not necessary since currently no data manipulation takes place. Only chance to fail
+	 * is spring misconfiguration or downstream error, tested below
+	 */
 	public void testGetItems(){
-		//not necessary since currently no data manipulation takes place
+
+	}
+	
+	@Test(expected = TransactionException.class)
+	public void testFailGetItems() throws TransactionException{
+		EasyMock.expect(dbConnector.getItems()).andThrow(new TransactionException("fail")).once();
+		EasyMock.replay(dbConnector);
+		provider.getItems();
 	}
 }

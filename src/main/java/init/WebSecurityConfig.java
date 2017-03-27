@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 
 @Configuration
 @EnableWebSecurity
-@ComponentScan(basePackages={"rest"})
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	private static final int SECONDS_IN_HOUR = 60*60;
@@ -21,9 +20,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/", "/home", "/items").permitAll()
-                .antMatchers(HttpMethod.POST, "/items").hasRole("USER")
+                //only allow members of USER group to post to send POST to /items, i.e., buy
+                .antMatchers(HttpMethod.POST, "/items/*").hasRole("USER") 
                 .anyRequest().authenticated()
                 .and()
+			.formLogin()
+				.loginPage("/login")
+				.permitAll()
+				.and()
             .httpBasic() //allows for programatic login
             	.and()
             .rememberMe()
